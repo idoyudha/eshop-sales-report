@@ -1,16 +1,30 @@
-from sqlmodel import Column, Float, DateTime, UUID
-from sqlalchemy.sql import func
-from app.db.base import Base
-import uuid
+from sqlmodel import Field, SQLModel
+from datetime import datetime, timezone
+from uuid import UUID, uuid5
 
-class Sale(Base):
+class SaleBase(SQLModel):
+    product_id: UUID = Field(index=True)
+    warehouse_id: UUID = Field(index=True)
+    user_id: UUID = Field(index=True)
+    order_id: UUID = Field(index=True)
+    margin: float
+
+class Sale(SaleBase, table=True):
     __tablename__ = "sales_report"
+    
+    id: UUID = Field(
+        default_factory=uuid5,
+        primary_key=True,
+        index=True,
+    )
+    created_at: datetime = Field(
+        default_factory=datetime.now(timezone.utc),
+        nullable=False,
+    )
 
-    id = Column(UUID, primary_key=True, index=True, default=uuid.uuid5)
-    warehouse_id = Column(UUID, nullable=False, index=True)
-    user_id = Column(UUID, nullable=False, index=True)
-    order_id = Column(UUID, nullable=False, index=True)
-    product_id = Column(UUID, nullable=False, index=True)
-    product_quantity = Column(Float, nullable=False)
-    margin_per_product = Column(Float, nullable=False)
-    created_at = Column(DateTime(timezone=True), nullable=False, server_default=func.now())
+class SaleCreate(SaleBase):
+    pass
+
+class SaleRead(SaleBase):
+    id: UUID
+    created_at: datetime
