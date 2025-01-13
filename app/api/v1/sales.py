@@ -1,10 +1,9 @@
 from fastapi import APIRouter, Query, Depends
 from typing import List, Optional
 from app.schemas.sale import Sale
-from sqlalchemy import select
 from uuid import UUID
-from sqlalchemy.ext.asyncio import AsyncSession
 from app.db.session import get_db
+from sqlmodel import func, select
 
 router = APIRouter()
 
@@ -17,7 +16,7 @@ async def read_sales(
     page: int = Query(1, description="Page number"),
     page_size: int = Query(10, description="Number of items per page"),
     db: AsyncSession = Depends(get_db)
-):
+) -> List[Sale]:
     query = select(Sale)
 
     # filters

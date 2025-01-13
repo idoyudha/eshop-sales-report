@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Float, DateTime, UUID
+from sqlmodel import Column, Float, DateTime, UUID
 from sqlalchemy.sql import func
 from app.db.base import Base
 import uuid
