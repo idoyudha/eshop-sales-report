@@ -1,22 +1,24 @@
-from fastapi import APIRouter, Query, Depends
+from fastapi import APIRouter, Depends, Query, HTTPException
+from sqlmodel import select
+from sqlmodel.ext.asyncio.session import AsyncSession
 from typing import List, Optional
-from app.schemas.sale import Sale
 from uuid import UUID
-from app.db.session import get_db
-from sqlmodel import func, select
+from app.db.session import get_session
+from app.models.sale import Sale, SaleRead
 
 router = APIRouter()
 
-@router.get("/", response_model=List[Sale])
+@router.get("/", response_model=List[SaleRead])
 async def read_sales(
-    warehouse_id: Optional[UUID] = Query(None, description="Filter by warehouse_id"),
-    user_id: Optional[UUID] = Query(None, description="Filter by user_id"),
-    order_id: Optional[UUID] = Query(None, description="Filter by order_id"),
-    product_id: Optional[UUID] = Query(None, description="Filter by product_id"),
-    page: int = Query(1, description="Page number"),
-    page_size: int = Query(10, description="Number of items per page"),
-    db: AsyncSession = Depends(get_db)
-) -> List[Sale]:
+    *,
+    session: AsyncSession = Depends(get_session),
+    product_id: Optional[UUID] = Query(None, description="Filter by product ID"),
+    warehouse_id: Optional[UUID] = Query(None, description="Filter by warehouse ID"),
+    user_id: Optional[UUID] = Query(None, description="Filter by user ID"),
+    order_id: Optional[UUID] = Query(None, description="Filter by order ID"),
+    skip: int = Query(0, ge=0),
+    limit: int = Query(100, ge=1, le=100)
+):
     query = select(Sale)
 
     # filters
@@ -30,9 +32,8 @@ async def read_sales(
         query = query.where(Sale.order_id == order_id)
 
     # pagination
-    query = query.limit(page_size).offset((page - 1) * page_size)
+    query = query.offset(skip).limit(limit)
 
-    async with db as session:
-        result = await session.execute(query)
-        sales = result.scalars().all()
-        return sales
+    result = await session.exec(query)
+    sales = result.scalars().all()
+    return sales
