@@ -1,0 +1,12 @@
+[project]
+name = "eshop-sales-report"
+version = "0.1.0"
+description = "Eshop Sales Report Service"
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+    "confluent-kafka>=2.8.0",
+    "fastapi>=0.115.6",
+    "pydantic>=2.10.5",
+    "sqlmodel>=0.0.22",
+]
