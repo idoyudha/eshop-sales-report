@@ -43,6 +43,10 @@ class Settings(BaseSettings):
     POSTGRES_PASSWORD: str = ""
     POSTGRES_DB: str = ""
 
+    KAFKA_BOOTSTRAP_SERVER: str
+    KAFKA_TOPIC_SALE_CREATED: str = "sale-created"
+    KAFKA_CONSUMER_GROUP: str
+
     @computed_field  # type: ignore[prop-decorator]
     @property
     def SQLALCHEMY_DATABASE_URI(self) -> PostgresDsn:
