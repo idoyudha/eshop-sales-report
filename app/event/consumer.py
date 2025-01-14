@@ -10,6 +10,7 @@ from sqlmodel.ext.asyncio.session import AsyncSession
 
 from app.core.config import settings
 from app.models.sale import SaleCreate, Sale
+from app.repository.sale import create_sale
 
 logger = logging.getLogger(__name__)
 
@@ -42,11 +43,12 @@ class KafkaConsumer:
     async def process_message(self, message: Dict[str, Any]) -> None:
         try:
             sale_data = SaleCreate(**message)
-            db_sale = Sale.model_validate(sale_data)
-            self.session.add(db_sale)
-            await self.session.commit()
-            await self.session.refresh(db_sale)
-            logger.info(f"Processed sale with order ID: {sale_data.order_id}")
+            sale = create_sale(session=self.session, sale_in=sale_data)
+            # db_sale = Sale.model_validate(sale_data)
+            # self.session.add(db_sale)
+            # await self.session.commit()
+            # await self.session.refresh(db_sale)
+            logger.info(f"Processed sale with order ID: {sale.order_id}")
         except Exception as e:
             logger.error(f"Failed to process message: {e}")
             await self.session.rollback()
