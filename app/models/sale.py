@@ -1,5 +1,5 @@
 import uuid
-from datetime import datetime
+from datetime import datetime, timezone
 
 from sqlmodel import Field, SQLModel
 
@@ -18,8 +18,8 @@ class SaleCreate(SaleBase):
 
 # database model, database table inferred from the class name
 class Sale(SaleBase, table=True):
-    id: uuid.UUID = Field(default_factory=uuid.uuid5, primary_key=True)
-    created_at: datetime = Field(default_factory=datetime.now(datetime.timezone.utc))
+    id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
+    created_at: datetime = Field(default_factory=lambda: datetime.now(tz=timezone.utc))
 
 # properties to return via API, some fields are always required
 class SalePublic(SaleBase):
