@@ -9,8 +9,8 @@ from confluent_kafka import Consumer, KafkaError, KafkaException
 from sqlmodel.ext.asyncio.session import AsyncSession
 
 from app.core.config import settings
-from app.models.sale import SaleCreate, Sale
-from app.repository.sale import create_sale
+from app.models.kafka_sale import KafkaSaleCreated
+from app.service.sale import create_sale_service
 
 logger = logging.getLogger(__name__)
 
@@ -29,7 +29,7 @@ class KafkaConsumer:
         try:
             data = json.loads(message.decode('utf-8'))
             # Convert string UUIDs to UUID objects
-            for key in ['product_id', 'warehouse_id', 'user_id', 'order_id']:
+            for key in ['product_id', 'user_id', 'order_id']:
                 if key in data and isinstance(data[key], str):
                     data[key] = UUID(data[key])
             return data
@@ -42,13 +42,10 @@ class KafkaConsumer:
 
     async def process_message(self, message: Dict[str, Any]) -> None:
         try:
-            sale_data = SaleCreate(**message)
-            sale = create_sale(session=self.session, sale_in=sale_data)
-            # db_sale = Sale.model_validate(sale_data)
-            # self.session.add(db_sale)
-            # await self.session.commit()
-            # await self.session.refresh(db_sale)
-            logger.info(f"Processed sale with order ID: {sale.order_id}")
+            # mapping
+            sale_created_data = KafkaSaleCreated(**message)
+            sales = create_sale_service(session=self.session, input=sale_created_data)
+            logger.info(f"Processed sale with order IDs: {[sale.order_id for sale in sales]}")
         except Exception as e:
             logger.error(f"Failed to process message: {e}")
             await self.session.rollback()

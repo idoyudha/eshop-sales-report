@@ -5,7 +5,6 @@ from sqlmodel import Field, SQLModel
 
 # shared properties
 class SaleBase(SQLModel):
-    warehouse_id: uuid.UUID = Field(index=True)
     user_id: uuid.UUID = Field(index=True)
     order_id: uuid.UUID = Field(index=True)
     product_id: uuid.UUID = Field(index=True)

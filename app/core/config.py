@@ -43,7 +43,7 @@ class Settings(BaseSettings):
 
     KAFKA_BOOTSTRAP_SERVER: str
     KAFKA_TOPIC_SALE_CREATED: str = "sale-created"
-    KAFKA_CONSUMER_GROUP: str
+    KAFKA_CONSUMER_GROUP: str = "sale-group"
 
     @computed_field  # type: ignore[prop-decorator]
     @property
