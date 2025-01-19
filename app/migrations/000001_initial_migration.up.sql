@@ -8,6 +8,6 @@ CREATE TABLE IF NOT EXISTS "sales" (
   "created_at" timestamp NOT NULL,
 );
 
-CREATE INDEX ON "sales" ("user_id");
-CREATE INDEX ON "sales" ("order_id");
-CREATE INDEX ON "sales" ("product_id");
+CREATE INDEX idx_user_id ON "sales" ("user_id");
+CREATE INDEX idx_order_id ON "sales" ("order_id");
+CREATE INDEX idx_product_id ON "sales" ("product_id");
