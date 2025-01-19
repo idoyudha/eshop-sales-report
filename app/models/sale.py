@@ -8,7 +8,7 @@ class SaleBase(SQLModel):
     user_id: uuid.UUID = Field(index=True)
     order_id: uuid.UUID = Field(index=True)
     product_id: uuid.UUID = Field(index=True)
-    product_quantity: float
+    product_quantity: int
     margin_per_product: float
 
 # properties to receive on sale creation

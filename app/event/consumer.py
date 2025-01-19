@@ -42,7 +42,6 @@ class KafkaConsumer:
 
     async def process_message(self, message: Dict[str, Any]) -> None:
         try:
-            # mapping
             sale_created_data = KafkaSaleCreated(**message)
             sales = create_sale_service(session=self.session, input=sale_created_data)
             logger.info(f"Processed sale with order IDs: {[sale.order_id for sale in sales]}")
