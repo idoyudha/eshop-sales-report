@@ -5,7 +5,7 @@ CREATE TABLE IF NOT EXISTS "sales" (
   "product_id" uuid NOT NULL,
   "product_quantity" integer NOT NULL,
   "margin_per_product" float NOT NULL,
-  "created_at" timestamp NOT NULL,
+  "created_at" timestamp NOT NULL
 );
 
 CREATE INDEX idx_user_id ON "sales" ("user_id");
