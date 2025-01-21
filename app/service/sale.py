@@ -7,7 +7,6 @@ from app.repository.sale import create_sale
 
 def create_sale_service(session: AsyncSession, input: KafkaSaleCreated) -> list[Sale]:
     sales = map_kafka_sale_to_sale(input)
-    # TODO: can we improve become only one insert query?
     result = []
     for sale in sales:
         result.append(create_sale(session=session, sale_in=sale))

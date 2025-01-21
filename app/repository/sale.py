@@ -1,25 +1,30 @@
-from sqlmodel import Session, select, func
+from sqlmodel.ext.asyncio.session import AsyncSession
+from sqlmodel import select, func
 
 from app.models.sale import SaleCreate, Sale, SalePublic
 
-def create_sale(*, session: Session, sale_in: SaleCreate) -> Sale:
+async def create_sale(*, session: AsyncSession, sale_in: SaleCreate) -> Sale:
     db_item = Sale.model_validate(sale_in)
     session.add(db_item)
-    session.commit()
-    session.refresh(db_item)
+    # session.commit()
+    # session.refresh(db_item)
+    await session.flush() # flush to only get id
     return db_item
 
-def get_sales(*, session: Session, offset: int, limit: int) -> list[SalePublic]:
+async def get_sales(*, session: AsyncSession, offset: int, limit: int) -> list[SalePublic]:
     statement = (
         select(Sale)
         .offset(offset)
         .limit(limit)
     )
-    return session.exec(statement).all()
+    result = await session.exec(statement)
+    return result.all()
+    # return session.exec(statement).all()
 
-def count_total_sales(*, session: Session) -> int:
+async def count_total_sales(*, session: AsyncSession) -> int:
     count_statement = (
         select(func.count())
         .select_from(Sale)
     )
-    return session.exec(count_statement).one()
+    result = await session.exec(count_statement)
+    return result.one()
