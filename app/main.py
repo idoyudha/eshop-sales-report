@@ -1,8 +1,42 @@
+import asyncio
+from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from starlette.middleware.cors import CORSMiddleware
 
 from app.api.main import api_router
 from app.core.config import settings
+from app.core.db import init_db
+from app.event.consumer import KafkaConsumer
+
+# store consumer task globally
+kafka_consumer_task = None
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    # startup
+    global kafka_consumer_task
+
+    # initialize database
+    await init_db()
+
+    # initialize and start kafka consumer
+    consumer = KafkaConsumer()
+    kafka_consumer_task = asyncio.create_task(consumer.start())
+
+    try:
+        yield
+    finally:
+        # shutdown
+        if kafka_consumer_task:
+            consumer.running = False
+            try:
+                await asyncio.wait_for(kafka_consumer_task, timeout=10.0)
+            except asyncio.TimeoutError:
+                kafka_consumer_task.cancel()
+                try:
+                    await kafka_consumer_task
+                except asyncio.CancelledError:
+                    pass
 
 app = FastAPI(
     title=settings.PROJECT_NAME,

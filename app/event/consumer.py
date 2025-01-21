@@ -9,6 +9,7 @@ from confluent_kafka import Consumer, KafkaError, KafkaException
 from sqlmodel.ext.asyncio.session import AsyncSession
 
 from app.core.config import settings
+from app.core.db import async_session_factory
 from app.models.kafka_sale import KafkaSaleCreated
 from app.service.sale import create_sale_service
 
@@ -41,14 +42,17 @@ class KafkaConsumer:
             raise
 
     async def process_message(self, message: Dict[str, Any]) -> None:
-        try:
-            sale_created_data = KafkaSaleCreated(**message)
-            sales = create_sale_service(session=self.session, input=sale_created_data)
-            logger.info(f"Processed sale with order IDs: {[sale.order_id for sale in sales]}")
-        except Exception as e:
-            logger.error(f"Failed to process message: {e}")
-            await self.session.rollback()
-            raise
+        # create a new session for each message
+        async with async_session_factory() as session:
+            try:
+                sale_created_data = KafkaSaleCreated(**message)
+                sales = await create_sale_service(session=self.session, input=sale_created_data)
+                await session.commit()
+                logger.info(f"Processed sale with order IDs: {[sale.order_id for sale in sales]}")
+            except Exception as e:
+                logger.error(f"Failed to process message: {e}")
+                await self.session.rollback()
+                raise
 
     async def start(self):
         try:
