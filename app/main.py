@@ -16,10 +16,13 @@ logger = logging.getLogger(__name__)
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
+    logger.info("Starting application...")
     await init_db()
+    logger.info("Database initialized.")
 
     kafka_consumer = KafkaConsumer()
     asyncio.create_task(kafka_consumer.start())
+    logger.info("Kafka consumer started.")
 
     yield
 

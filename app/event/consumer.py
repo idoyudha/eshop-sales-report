@@ -60,7 +60,8 @@ class KafkaConsumer:
             while self.running:
                 try:
                     # poll messages with timeout
-                    msg = self.consumer.poll(timeout=1.0)
+                    msg = await asyncio.to_thread(self.consumer.poll, timeout=1.0)
+                    # msg = self.consumer.poll(timeout=1.0)
                     if msg is None:
                         continue
                     if msg.error():
