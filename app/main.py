@@ -10,44 +10,26 @@ from app.core.config import settings
 from app.core.db import init_db
 from app.event.consumer import KafkaConsumer
 
+# initialize logging
+logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
-
-# store consumer task globally
-kafka_consumer_task = None
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    # startup
-    global kafka_consumer_task
-
-    # initialize database
-    logger.info("Initializing database...")
     await init_db()
 
-    # initialize and start kafka consumer
-    logger.info("Initializing kafka consumer...")
-    consumer = KafkaConsumer()
-    kafka_consumer_task = asyncio.create_task(consumer.start())
+    kafka_consumer = KafkaConsumer()
+    asyncio.create_task(kafka_consumer.start())
 
-    try:
-        yield
-    finally:
-        # shutdown
-        if kafka_consumer_task:
-            consumer.running = False
-            try:
-                await asyncio.wait_for(kafka_consumer_task, timeout=10.0)
-            except asyncio.TimeoutError:
-                kafka_consumer_task.cancel()    
-                try:
-                    await kafka_consumer_task
-                except asyncio.CancelledError:
-                    pass
+    yield
 
+    logger.info("Shutting down the application...")
+
+# create fastapu app
 app = FastAPI(
     title=settings.PROJECT_NAME,
     openapi_url=f"{settings.API_V1_STR}/openapi.json",
-    lifespan=lifespan
+    lifespan=lifespan,
 )
 
 # set all cors enabled origins
