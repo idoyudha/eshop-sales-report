@@ -1,7 +1,6 @@
 import uuid
 from datetime import datetime, timezone
-from sqlmodel import Field, SQLModel
-from sqlalchemy import DateTime
+from sqlmodel import Field, SQLModel, DateTime
 
 # shared properties
 class SaleBase(SQLModel):
@@ -25,8 +24,10 @@ class SaleCreate(SaleBase):
 
 # properties to return via API, some fields are always required
 class SalePublic(SaleBase):
-    id: uuid.UUID
+    pass
 
 class SalesPublic(SQLModel):
+    code: int
     data: list[SalePublic]
     count: int
+    message: str

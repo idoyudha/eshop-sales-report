@@ -15,14 +15,11 @@ async def get_sales(*, session: AsyncSession, offset: int, limit: int) -> list[S
         .offset(offset)
         .limit(limit)
     )
-    result = await session.exec(statement)
-    return result.all()
-    # return session.exec(statement).all()
+    result = await session.execute(statement)
+    sales = result.scalars().all()
+    return [SalePublic.model_validate(sale) for sale in sales]
 
 async def count_total_sales(*, session: AsyncSession) -> int:
-    count_statement = (
-        select(func.count())
-        .select_from(Sales)
-    )
-    result = await session.exec(count_statement)
-    return result.one()
+    count_statement = select(func.count()).select_from(Sales)
+    result = await session.execute(count_statement)
+    return result.scalar()
