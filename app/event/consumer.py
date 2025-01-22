@@ -6,7 +6,6 @@ from typing import Dict, Any
 from uuid import UUID
 
 from confluent_kafka import Consumer, KafkaError, KafkaException
-from sqlmodel.ext.asyncio.session import AsyncSession
 
 from app.core.config import settings
 from app.core.db import async_session_factory
@@ -16,8 +15,7 @@ from app.service.sale import create_sale_service
 logger = logging.getLogger(__name__)
 
 class KafkaConsumer:
-    def __init__(self, session: AsyncSession):
-        self.session = session
+    def __init__(self):
         self.consumer = Consumer({
             'bootstrap.servers': settings.KAFKA_BOOTSTRAP_SERVER,
             'group.id': settings.KAFKA_CONSUMER_GROUP,
@@ -45,13 +43,13 @@ class KafkaConsumer:
         # create a new session for each message
         async with async_session_factory() as session:
             try:
-                sale_created_data = KafkaSaleCreated(**message)
-                sales = await create_sale_service(session=self.session, input=sale_created_data)
+                sale_created_data = KafkaSaleCreated.model_validate(message)
+                sales = await create_sale_service(session=session, input=sale_created_data)
                 await session.commit()
                 logger.info(f"Processed sale with order IDs: {[sale.order_id for sale in sales]}")
             except Exception as e:
                 logger.error(f"Failed to process message: {e}")
-                await self.session.rollback()
+                await session.rollback()
                 raise
 
     async def start(self):
