@@ -1,16 +1,33 @@
-from sqlalchemy import Column, Float, DateTime, UUID
-from sqlalchemy.sql import func
-from app.db.base import Base
 import uuid
+from datetime import datetime, timezone
+from sqlmodel import Field, SQLModel, DateTime
 
-class Sale(Base):
-    __tablename__ = "sales_report"
+# shared properties
+class SaleBase(SQLModel):
+    user_id: uuid.UUID = Field(index=True)
+    order_id: uuid.UUID = Field(index=True)
+    product_id: uuid.UUID = Field(index=True)
+    product_quantity: int
+    margin_per_product: float
+    created_at: datetime = Field(
+        sa_type=DateTime(timezone=True),
+        default_factory=lambda: datetime.now(timezone.utc)
+    )
 
-    id = Column(UUID, primary_key=True, index=True, default=uuid.uuid5)
-    warehouse_id = Column(UUID, nullable=False, index=True)
-    user_id = Column(UUID, nullable=False, index=True)
-    order_id = Column(UUID, nullable=False, index=True)
-    product_id = Column(UUID, nullable=False, index=True)
-    product_quantity = Column(Float, nullable=False)
-    margin_per_product = Column(Float, nullable=False)
-    created_at = Column(DateTime(timezone=True), nullable=False, server_default=func.now())
+# database model, database table inferred from the class name
+class Sales(SaleBase, table=True):
+    id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
+
+# properties to receive on sale creation
+class SaleCreate(SaleBase):
+    pass
+
+# properties to return via API, some fields are always required
+class SalePublic(SaleBase):
+    pass
+
+class SalesPublic(SQLModel):
+    code: int
+    data: list[SalePublic]
+    count: int
+    message: str
