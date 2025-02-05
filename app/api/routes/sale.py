@@ -4,7 +4,7 @@ from typing import Any
 
 from app.api.deps import AsyncSessionDep
 from app.models.sale import SalesPublic
-from app.repository.sale import count_total_sales, get_sales
+from app.service.sale import get_sales_service, count_total_sales_service
 
 router = APIRouter(prefix="/sales", tags=["sales"])
 
@@ -17,8 +17,8 @@ async def read_sales(
     """
     Retrieve sales.
     """
-    count = await count_total_sales(session=session)
-    sales = await get_sales(session=session, offset=skip, limit=limit)
+    count = await count_total_sales_service(session=session)
+    sales = await get_sales_service(session=session, offset=skip, limit=limit)
     return SalesPublic(
         code=HTTPStatus.OK,
         data=sales, 
