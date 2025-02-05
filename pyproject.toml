@@ -13,4 +13,5 @@ dependencies = [
     "pydantic-settings>=2.7.1",
     "sqlmodel>=0.0.22",
     "tenacity>=9.0.0",
+    "xlsxwriter>=3.2.2",
 ]
