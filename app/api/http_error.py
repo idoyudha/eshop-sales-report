@@ -1,32 +1,35 @@
+from fastapi.responses import JSONResponse
 from http import HTTPStatus
-from fastapi import HTTPException
 from typing import Optional
-from pydantic import BaseModel
 
-class ErrorMessage(BaseModel):
-    message: str
-    causes: Optional[str] = None
+class ErrorResponse:
+    def __init__(self, code: int, message: str, causes: Optional[str] = None):
+        self.code = code
+        self.message = message
+        self.causes = causes
 
-class RestError(BaseModel):
-    code: int
-    error: ErrorMessage
+    def to_response(self):
+        return JSONResponse(
+            status_code=self.code,
+            content={
+                "code": self.code,
+                "error": {
+                    "message": self.message,
+                    "causes": self.causes
+                }
+            }
+        )
 
-class CustomHTTPException(HTTPException):
-    def __init__(self, status_code: int, message: str, causes: Optional[str] = None):
-        self.status_code = status_code
-        self.error_message = ErrorMessage(message=message, causes=causes)
-        super().__init__(status_code=status_code, detail=self.error_message.model_dump())
-
-def unauthorized_error(message: str, causes: Optional[str] = None) -> CustomHTTPException:
-    return CustomHTTPException(
-        status_code=HTTPStatus.UNAUTHORIZED,
+def unauthorized_error(message: str, causes: Optional[str] = None) -> ErrorResponse:
+    return ErrorResponse(
+        code=HTTPStatus.UNAUTHORIZED.value,
         message=message,
         causes=causes
     )
 
-def internal_error(message: str, causes: Optional[str] = None) -> CustomHTTPException:
-    return CustomHTTPException(
-        status_code=HTTPStatus.INTERNAL_SERVER_ERROR,
+def internal_error(message: str, causes: Optional[str] = None) -> ErrorResponse:
+    return ErrorResponse(
+        code=HTTPStatus.INTERNAL_SERVER_ERROR.value,
         message=message,
         causes=causes
     )

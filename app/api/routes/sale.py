@@ -1,5 +1,5 @@
 from http import HTTPStatus
-from fastapi import APIRouter
+from fastapi import APIRouter, Request
 from fastapi.responses import StreamingResponse
 from typing import Any
 
@@ -13,6 +13,7 @@ router = APIRouter(prefix="/sales", tags=["sales"])
 @router.get("/", response_model=SalesPublic)
 @requires_auth()
 async def read_sales(
+    request: Request,
     session: AsyncSessionDep, 
     skip: int = 0, 
     limit: int = 10
@@ -31,7 +32,10 @@ async def read_sales(
 
 @router.get("/xlsx-report")
 @requires_auth()
-async def generate_sales_report_xlsx(session: AsyncSessionDep) -> Any:
+async def generate_sales_report_xlsx(
+    request: Request,
+    session: AsyncSessionDep
+) -> Any:
     """
     Generate sales report in xlsx format.
     """
