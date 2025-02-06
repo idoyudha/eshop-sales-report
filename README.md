@@ -24,8 +24,12 @@ eshop-auth
 
 ### Tech Stack
 - Programming Language: Python
+- CI/CD: Github Actions
 - Framework: FastAPI
 - Database: PostgreSQL
-- Authentication: AWS Cognito
+- Identity and Access Management: AWS Cognito
 - Message Broker: Apache Kafka
 - Container: Docker
+
+## API Documentation
+tbd
