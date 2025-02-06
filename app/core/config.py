@@ -45,6 +45,8 @@ class Settings(BaseSettings):
     KAFKA_TOPIC_SALE_CREATED: str = "sale-created"
     KAFKA_CONSUMER_GROUP: str = "sale-group"
 
+    AUTH_BASE_URL = str
+
     @computed_field  # type: ignore[prop-decorator]
     @property
     def SQLALCHEMY_DATABASE_URI(self) -> PostgresDsn:
