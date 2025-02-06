@@ -1,16 +1,19 @@
 from http import HTTPStatus
-from fastapi import APIRouter
+from fastapi import APIRouter, Request
 from fastapi.responses import StreamingResponse
 from typing import Any
 
 from app.api.deps import AsyncSessionDep
 from app.models.sale import SalesPublic
 from app.service.sale import get_sales_service, count_total_sales_service, generate_sales_report_xlsx_service
+from app.api.middleware import requires_auth
 
 router = APIRouter(prefix="/sales", tags=["sales"])
 
 @router.get("/", response_model=SalesPublic)
+@requires_auth()
 async def read_sales(
+    request: Request,
     session: AsyncSessionDep, 
     skip: int = 0, 
     limit: int = 10
@@ -28,7 +31,11 @@ async def read_sales(
     )
 
 @router.get("/xlsx-report")
-async def generate_sales_report_xlsx(session: AsyncSessionDep) -> Any:
+@requires_auth()
+async def generate_sales_report_xlsx(
+    request: Request,
+    session: AsyncSessionDep
+) -> Any:
     """
     Generate sales report in xlsx format.
     """
